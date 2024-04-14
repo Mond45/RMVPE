@@ -57,7 +57,7 @@ def train(alpha, gamma):
     scheduler = StepLR(
         optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay_rate
     )
-    summary(model)
+    # summary(model)
 
     loop = tqdm(range(resume_iteration + 1, iterations + 1))
     RPA, RCA, OA, VFA, VR, it = 0, 0, 0, 0, 0, 0
@@ -66,7 +66,7 @@ def train(alpha, gamma):
         audio = data["audio"].to(device)
         pitch_label = data["pitch"].to(device)
         pitch_pred = model(audio)
-        loss = FL(pitch_pred, pitch_label, alpha, gamma)
+        loss = FL(pitch_pred[1], pitch_label, alpha, gamma)
 
         print(i, end="\t")
         print("loss_total:", loss.item())

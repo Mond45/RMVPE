@@ -31,7 +31,7 @@ def evaluate(dataset, model, hop_length, device, pitch_th=0.0):
                     (0, end - start - len(audio[start:end])),
                     mode="constant",
                 )
-                t_pitch_pred = model(t_audio.reshape((-1, t_audio.shape[-1]))).squeeze(
+                t_pitch_pred = model(t_audio.reshape((-1, t_audio.shape[-1])))[1].squeeze(
                     0
                 )
                 pitch_pred[start_steps : end_steps + 1] = t_pitch_pred[
@@ -39,7 +39,7 @@ def evaluate(dataset, model, hop_length, device, pitch_th=0.0):
                 ]
             else:
                 t_audio = audio[start:end]
-                t_pitch_pred = model(t_audio.reshape((-1, t_audio.shape[-1]))).squeeze(
+                t_pitch_pred = model(t_audio.reshape((-1, t_audio.shape[-1])))[1].squeeze(
                     0
                 )
                 pitch_pred[start_steps : end_steps + 1] = t_pitch_pred
