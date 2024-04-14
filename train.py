@@ -101,7 +101,7 @@ def train(alpha, gamma):
                         f.write(str(OA) + "\t")
                         f.write(str(VR) + "\t")
                         f.write(str(VFA) + "\n")
-                    torch.save(model.module, os.path.join(logdir, f"model-1-{i}.pt"))
+                    torch.save(model.module, os.path.join(logdir, f"model.pt"))
                     torch.save(
                         optimizer.state_dict(),
                         os.path.join(logdir, "last-optimizer-state.pt"),
