@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 from torch import nn
 from torch.nn.utils import clip_grad_norm_
@@ -7,10 +8,9 @@ from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-import numpy as np
 
-from src import MIR1K, E2E, cycle, summary, SAMPLE_RATE, FL
 from evaluate import evaluate
+from src import E2E, FL, MIR1K, SAMPLE_RATE, cycle, summary
 
 
 def train(alpha, gamma):
@@ -24,9 +24,9 @@ def train(alpha, gamma):
     clip_grad_norm = 3
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    train_dataset = MIR1K("/cache/whj/dataset/MIR1K", hop_length, seq_l, ["train"])
+    train_dataset = MIR1K("dataset", hop_length, seq_l, ["train"])
     print(len(train_dataset))
-    validation_dataset = MIR1K("/cache/whj/dataset/MIR1K", hop_length, None, ["test"])
+    validation_dataset = MIR1K("dataset", hop_length, None, ["test"])
     print(len(validation_dataset))
 
     data_loader = DataLoader(train_dataset, batch_size, shuffle=True, drop_last=True)
@@ -112,9 +112,4 @@ def train(alpha, gamma):
             break
 
 
-alpha_list = [6, 7, 8, 9, 10]
-for alpha in alpha_list:
-    print("" * 250)
-    print(alpha)
-    print("" * 250)
-    train(alpha, 0)
+train(8, 0)
