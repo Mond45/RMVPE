@@ -5,7 +5,7 @@ This repo is the Pytorch implementation of ["RMVPE: A Robust Model for Vocal Pit
 ## Dependencies
 
 ```
-conda create -n rmvpe python=3.10 pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia librosa=0.9.2 scipy tqdm pandas tensorboard
+conda create -n rmvpe2 python=3.10 librosa=0.9.2 pytorch torchvision torchaudio scipy tqdm pandas tensorboard pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 ```
 pip install mir_eval
