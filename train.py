@@ -10,11 +10,11 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from evaluate import evaluate
-from src import E2E, FL, MIR1K, SAMPLE_RATE, cycle, summary
+from src import E2ER, FL, MIR1K_REG, SAMPLE_RATE, cycle, summary, to_local_average_cents, smoothl1
 
 
-def train(alpha, gamma):
-    logdir = "runs/Pitch_FL" + str(alpha) + "_" + str(gamma)
+def train(alpha): #bring out gamma
+    logdir = "runs/Pitch_FL" + str(alpha) #+ "_" + str(gamma)
     seq_l = 2.55
 
     hop_length = 20
@@ -24,9 +24,9 @@ def train(alpha, gamma):
     clip_grad_norm = 3
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    train_dataset = MIR1K("dataset", hop_length, seq_l, ["train"])
+    train_dataset = MIR1K_REG("dataset", hop_length, seq_l, ["train"])
     print(len(train_dataset))
-    validation_dataset = MIR1K("dataset", hop_length, None, ["test"])
+    validation_dataset = MIR1K_REG("dataset", hop_length, None, ["test"])
     print(len(validation_dataset))
 
     data_loader = DataLoader(train_dataset, batch_size, shuffle=True, drop_last=True)
@@ -42,7 +42,7 @@ def train(alpha, gamma):
 
     if resume_iteration is None:
         model = nn.DataParallel(
-            E2E(int(hop_length / 1000 * SAMPLE_RATE), 4, 1, (2, 2))
+            E2ER(int(hop_length / 1000 * SAMPLE_RATE), 4, 1, (2, 2))
         ).to(device)
         optimizer = torch.optim.Adam(model.parameters(), learning_rate)
         resume_iteration = 0
@@ -65,8 +65,10 @@ def train(alpha, gamma):
     for i, data in zip(loop, cycle(data_loader)):
         audio = data["audio"].to(device)
         pitch_label = data["pitch"].to(device)
+
         pitch_pred = model(audio)
-        loss = FL(pitch_pred[1], pitch_label, alpha, gamma)
+        #loss = FL(pitch_pred[1], freq, alpha, gamma) #have to change
+        loss = smoothl1(pitch_pred[1], pitch_label, alpha)
 
         print(i, end="\t")
         print("loss_total:", loss.item())
@@ -112,4 +114,5 @@ def train(alpha, gamma):
             break
 
 
-train(8, 0)
+#train(8, 0)
+train(8)
