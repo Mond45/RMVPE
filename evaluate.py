@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 
 from collections import defaultdict
-from src import to_local_average_cents, bce, SAMPLE_RATE, WINDOW_LENGTH
+from src import to_local_average_cents, bce, SAMPLE_RATE, WINDOW_LENGTH, smoothl1
 from mir_eval.melody import (
     raw_pitch_accuracy,
     to_cent_voicing,
@@ -44,29 +44,14 @@ def evaluate(dataset, model, hop_length, device, pitch_th=0.0):
                 )
                 pitch_pred[start_steps : end_steps + 1] = t_pitch_pred
 
-        loss = bce(pitch_pred, pitch_label)
+        #loss = bce(pitch_pred, pitch_label)
+        loss = smoothl1(pitch_pred, pitch_label)
+
         metrics["loss"].append(loss.item())
 
-        cents_pred = to_local_average_cents(pitch_pred.cpu().numpy(), None, pitch_th)
-        # cents_pred = to_viterbi_cents(pitch_pred.cpu().numpy())
-        # print()
-        cents_label = to_local_average_cents(pitch_label.cpu().numpy(), None, pitch_th)
-        # cents_label = to_viterbi_cents(pitch_label.cpu().numpy())
-        # print()
-
-        freq_pred = np.array(
-            [
-                10 * (2 ** (cent_pred / 1200)) if cent_pred else 0
-                for cent_pred in cents_pred
-            ]
-        )
-        freq = np.array(
-            [10 * (2 ** (cent / 1200)) if cent else 0 for cent in cents_label]
-        )
-
-        time_slice = np.array([i * hop_length / 1000 for i in range(len(cents_label))])
+        time_slice = np.array([i * hop_length / 1000 for i in range(len(pitch_label))])
         ref_v, ref_c, est_v, est_c = to_cent_voicing(
-            time_slice, freq, time_slice, freq_pred
+            time_slice, pitch_label.cpu().numpy(), time_slice, pitch_pred.cpu().numpy()
         )
 
         rpa = raw_pitch_accuracy(ref_v, ref_c, est_v, est_c)
